@@ -127,7 +127,11 @@ function card(h, n){
 
 async function api(path, opt){
   const r = await fetch(path, opt);
-  if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0,200)}`);
+  if (!r.ok){
+    let msg = (await r.text()).slice(0,300);
+    try{ msg = JSON.parse(msg).detail || msg }catch(e){}
+    throw new Error(`${r.status} — ${msg}`);
+  }
   return r.json();
 }
 

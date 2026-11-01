@@ -6,7 +6,8 @@ import os, requests
 from functools import lru_cache
 from pathlib import Path
 from fastapi import FastAPI, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from opensearchpy.exceptions import ConnectionError as OSConnectionError, NotFoundError
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from opensearchpy import OpenSearch
@@ -19,6 +20,16 @@ RRF_K = 60
 
 app = FastAPI(title="DZ DSpace discovery")
 es = OpenSearch(hosts=[{"host": "localhost", "port": 9200}])
+
+@app.exception_handler(OSConnectionError)
+async def _os_down(request, exc):
+    return JSONResponse(status_code=503, content={"detail":
+        "OpenSearch is not reachable on localhost:9200. Run: docker compose up -d"})
+
+@app.exception_handler(NotFoundError)
+async def _no_index(request, exc):
+    return JSONResponse(status_code=503, content={"detail":
+        "Index 'dz_records' not found. Run: python pipeline/index.py --recreate"})
 
 @lru_cache
 def embedder(): return SentenceTransformer("BAAI/bge-m3")
