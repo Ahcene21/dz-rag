@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DZ Scholar — Découverte</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--ink:#1d2a22;--muted:#5d6b62;--line:#dfe4dc;--accent:#0b6b3a;--accent-ink:#fff;--soft:#e7f1ea;--warn:#8a5a00;--warn-bg:#fff4dc;--err:#a32020}
+@media (prefers-color-scheme:dark){:root{--bg:#121714;--card:#1a211d;--ink:#e6ece7;--muted:#9aa89f;--line:#2b352f;--accent:#46b97a;--accent-ink:#06210f;--soft:#1f2c24;--warn:#e8b95a;--warn-bg:#2d2512;--err:#ff8a8a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,"Segoe UI",Tahoma,"Noto Naskh Arabic","Noto Sans Arabic",sans-serif}
+header{background:var(--accent);color:var(--accent-ink);padding:14px 16px}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0}
+h1{font-size:1.15rem;margin:0}
+.sub{font-size:.85rem;opacity:.85}
+.lang button{background:transparent;border:1px solid currentColor;color:inherit;border-radius:6px;padding:3px 9px;margin-inline-start:4px;cursor:pointer;font:inherit;font-size:.85rem}
+.lang button[aria-pressed=true]{background:var(--accent-ink);color:var(--accent)}
+main{padding:20px 0 60px}
+form.search{display:flex;gap:8px;margin-bottom:10px}
+input[type=search]{flex:1;min-width:0;padding:12px 14px;font:inherit;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+button.primary{padding:12px 20px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer}
+button.primary:disabled{opacity:.6;cursor:wait}
+.opts{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;font-size:.9rem;color:var(--muted);margin-bottom:14px}
+.opts label{display:flex;align-items:center;gap:5px}
+.opts select,.opts input[type=number]{font:inherit;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink)}
+.opts input[type=number]{width:5.5em}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:9px 14px;font:inherit;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.card h3{margin:0 0 4px;font-size:1.05rem}
+.card h3 a{color:var(--accent);text-decoration:none}
+.card h3 a:hover{text-decoration:underline}
+.meta{font-size:.83rem;color:var(--muted);margin-bottom:6px;display:flex;flex-wrap:wrap;gap:4px 12px}
+.tag{background:var(--soft);color:var(--accent);padding:1px 8px;border-radius:99px;font-size:.78rem}
+.abs{margin:0;font-size:.92rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.abs.open{display:block}
+.answer{background:var(--card);border:1px solid var(--line);border-inline-start:5px solid var(--accent);border-radius:12px;padding:16px 18px;white-space:pre-wrap;margin-bottom:14px}
+.answer sup a{color:var(--accent);font-weight:700;text-decoration:none;padding:0 1px}
+.notice{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:9px 12px;font-size:.85rem;margin-bottom:14px}
+.sources-title{font-size:.9rem;color:var(--muted);margin:16px 0 8px}
+.card.src{scroll-margin-top:12px}
+.card.src:target{outline:2px solid var(--accent)}
+.num{display:inline-block;min-width:1.6em;text-align:center;background:var(--accent);color:var(--accent-ink);border-radius:6px;font-size:.8rem;font-weight:700;margin-inline-end:6px}
+.status{color:var(--muted);padding:24px 0;text-align:center}
+.err{color:var(--err)}
+.spin{display:inline-block;width:1em;height:1em;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px;margin-inline-end:8px}
+@keyframes s{to{transform:rotate(360deg)}}
+footer{color:var(--muted);font-size:.8rem;text-align:center;padding:20px 16px}
+@media (max-width:560px){form.search{flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div><h1 data-i="title"></h1><div class="sub" data-i="subtitle"></div></div>
+  <div class="lang" role="group" aria-label="Language">
+    <button data-l="ar">العربية</button><button data-l="fr">FR</button><button data-l="en">EN</button>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <form class="search" id="form">
+    <input type="search" id="q" dir="auto" autocomplete="off" required data-i-ph="placeholder">
+    <button class="primary" id="go" data-i="go"></button>
+  </form>
+  <div class="opts">
+    <label><span data-i="repo"></span>
+      <select id="repo"><option value="" data-i="all"></option></select></label>
+    <label><span data-i="from"></span> <input type="number" id="yf" min="1900" max="2100"></label>
+    <label><span data-i="to"></span> <input type="number" id="yt" min="1900" max="2100"></label>
+    <label id="modeWrap"><span data-i="mode"></span>
+      <select id="mode"><option value="hybrid">Hybrid</option><option value="bm25">BM25</option><option value="dense">Dense</option></select></label>
+    <label><input type="checkbox" id="rerank" checked> <span data-i="rerank"></span></label>
+  </div>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-search" aria-selected="true" data-i="tabSearch"></button>
+    <button role="tab" id="tab-ask" aria-selected="false" data-i="tabAsk"></button>
+  </div>
+  <div id="out" aria-live="polite"></div>
+</main>
+<footer data-i="footer"></footer>
+
+<script>
+const I = {
+ fr:{dir:"ltr",title:"DZ Scholar",subtitle:"Découverte intelligente dans les dépôts DSpace algériens",placeholder:"Posez une question ou saisissez des mots-clés (arabe, français, anglais)…",go:"Rechercher",repo:"Dépôt",all:"Tous",from:"De",to:"À",mode:"Mode",rerank:"Reclasser",tabSearch:"Documents",tabAsk:"Réponse citée (IA)",footer:"Prototype de recherche — les réponses générées peuvent contenir des erreurs ; vérifiez toujours les sources.",loading:"Recherche en cours…",loadingAsk:"Génération de la réponse (peut prendre une minute)…",none:"Aucun résultat.",sources:"Sources",open:"Ouvrir dans le dépôt",err:"Erreur :",warn:"Réponse générée par un modèle de langage à partir des résumés ci-dessous. Vérifiez les sources.",by:"par"},
+ en:{dir:"ltr",title:"DZ Scholar",subtitle:"Intelligent discovery across Algerian DSpace repositories",placeholder:"Ask a question or enter keywords (Arabic, French, English)…",go:"Search",repo:"Repository",all:"All",from:"From",to:"To",mode:"Mode",rerank:"Rerank",tabSearch:"Documents",tabAsk:"Cited answer (AI)",footer:"Research prototype — generated answers may contain errors; always check the sources.",loading:"Searching…",loadingAsk:"Generating the answer (may take a minute)…",none:"No results.",sources:"Sources",open:"Open in repository",err:"Error:",warn:"Answer generated by a language model from the abstracts below. Verify the sources.",by:"by"},
+ ar:{dir:"rtl",title:"DZ Scholar",subtitle:"اكتشاف ذكي في المستودعات الجزائرية المبنية على DSpace",placeholder:"اطرح سؤالاً أو أدخل كلمات مفتاحية (عربي، فرنسي، إنجليزي)…",go:"بحث",repo:"المستودع",all:"الكل",from:"من",to:"إلى",mode:"النمط",rerank:"إعادة الترتيب",tabSearch:"الوثائق",tabAsk:"إجابة موثقة (ذكاء اصطناعي)",footer:"نموذج بحثي أوّلي — قد تحتوي الإجابات المولّدة على أخطاء؛ تحقق دائماً من المصادر.",loading:"جارٍ البحث…",loadingAsk:"جارٍ توليد الإجابة (قد يستغرق دقيقة)…",none:"لا توجد نتائج.",sources:"المصادر",open:"فتح في المستودع",err:"خطأ:",warn:"إجابة مولّدة بواسطة نموذج لغوي اعتماداً على الملخصات أدناه. تحقق من المصادر.",by:"بواسطة"}
+};
+const $ = s => document.querySelector(s);
+let lang = (()=>{try{return localStorage.getItem("lang")}catch(e){return null}})() || "fr";
+let tab = "search", repoNames = {};
+
+function t(k){return I[lang][k]}
+function applyLang(){
+  document.documentElement.lang = lang; document.documentElement.dir = I[lang].dir;
+  document.title = t("title") + " — " + t("subtitle");
+  document.querySelectorAll("[data-i]").forEach(e => e.textContent = t(e.dataset.i));
+  document.querySelectorAll("[data-i-ph]").forEach(e => e.placeholder = t(e.dataset.iPh));
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.l === lang));
+  try{localStorage.setItem("lang", lang)}catch(e){}
+}
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function safeUrl(u){return /^https?:\/\//i.test(u||"") ? u : null}
+
+function params(){
+  const p = new URLSearchParams();
+  if ($("#repo").value) p.set("repo", $("#repo").value);
+  if ($("#yf").value) p.set("year_from", $("#yf").value);
+  if ($("#yt").value) p.set("year_to", $("#yt").value);
+  return p;
+}
+
+function card(h, n){
+  const u = safeUrl(h.url);
+  const title = u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
+  const creators = (h.creators||[]).slice(0,3).join("; ");
+  return `<article class="card ${n?'src':''}" ${n?`id="src-${n}"`:""}>
+    <h3 dir="auto">${n?`<span class="num">${n}</span>`:""}${title}</h3>
+    <div class="meta">${creators?`<span dir="auto">${esc(creators)}</span>`:""}
+      ${h.year?`<span>${esc(h.year)}</span>`:""}
+      ${h.repo?`<span class="tag">${esc(repoNames[h.repo]||h.repo)}</span>`:""}
+      ${h.type?`<span>${esc(h.type)}</span>`:""}</div>
+    ${h.abstract?`<p class="abs" dir="auto" onclick="this.classList.toggle('open')">${esc(h.abstract)}</p>`:""}
+  </article>`;
+}
+
+async function api(path, opt){
+  const r = await fetch(path, opt);
+  if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0,200)}`);
+  return r.json();
+}
+
+async function run(){
+  const q = $("#q").value.trim(); if (!q) return;
+  const out = $("#out"), btn = $("#go"); btn.disabled = true;
+  out.innerHTML = `<div class="status"><span class="spin"></span>${t(tab==="ask"?"loadingAsk":"loading")}</div>`;
+  try{
+    if (tab === "search"){
+      const p = params(); p.set("q", q); p.set("k", 15);
+      p.set("mode", $("#mode").value); p.set("rerank", $("#rerank").checked);
+      const hits = await api("/search?" + p);
+      out.innerHTML = hits.length ? hits.map(h => card(h)).join("") : `<div class="status">${t("none")}</div>`;
+    } else {
+      const p = params();
+      const body = {question: q, k: 6, repo: p.get("repo"),
+        year_from: p.get("year_from") ? +p.get("year_from") : null, year_to: p.get("year_to") ? +p.get("year_to") : null};
+      const d = await api("/ask", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+      const ans = esc(d.answer).replace(/\[(\d+)\]/g, (m,n) => +n>=1 && +n<=d.sources.length ? `<sup><a href="#src-${n}">[${n}]</a></sup>` : m);
+      // contexts carry abstracts; sources carry url/title
+      const cards = d.sources.map((s,i) => card({title:s.title,url:s.url,year:s.year,repo:s.repo,abstract:(d.contexts[i]||"").split("\n").slice(1).join(" ")}, s.n)).join("");
+      out.innerHTML = `<div class="notice" data-i="warn">${t("warn")}</div><div class="answer" dir="auto">${ans}</div>
+        <div class="sources-title" data-i="sources">${t("sources")}</div>${cards}`;
+    }
+  }catch(e){ out.innerHTML = `<div class="status err">${t("err")} ${esc(e.message)}</div>`; }
+  btn.disabled = false;
+}
+
+function setTab(x){
+  tab = x;
+  $("#tab-search").setAttribute("aria-selected", x==="search"); $("#tab-ask").setAttribute("aria-selected", x==="ask");
+  $("#modeWrap").style.display = x==="search" ? "" : "none";
+  $("#rerank").parentElement.style.display = x==="search" ? "" : "none";
+  if ($("#q").value.trim()) run();
+}
+
+async function init(){
+  applyLang();
+  try{
+    const f = await api("/facets");
+    f.repos.forEach(r => { repoNames[r.id] = r.id;
+      $("#repo").insertAdjacentHTML("beforeend", `<option value="${esc(r.id)}">${esc(r.id)} (${r.count})</option>`); });
+    if (f.year_min) $("#yf").placeholder = Math.floor(f.year_min);
+    if (f.year_max) $("#yt").placeholder = Math.floor(f.year_max);
+  }catch(e){}
+}
+document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { lang = b.dataset.l; applyLang(); });
+$("#tab-search").onclick = () => setTab("search"); $("#tab-ask").onclick = () => setTab("ask");
+$("#form").onsubmit = e => { e.preventDefault(); run(); };
+init();
+</script>
+</body>
+</html>

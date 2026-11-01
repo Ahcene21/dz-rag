@@ -4,7 +4,10 @@ Env: OLLAMA_URL (default http://localhost:11434), LLM_MODEL (default qwen2.5:7b-
 """
 import os, requests
 from functools import lru_cache
+from pathlib import Path
 from fastapi import FastAPI, Query
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from opensearchpy import OpenSearch
 from sentence_transformers import SentenceTransformer, CrossEncoder
@@ -99,3 +102,20 @@ def ask(a: Ask):
     return {"answer": r.json()["message"]["content"], "contexts": contexts,
             "sources": [{"n": i, "title": h["title"], "url": h.get("url"), "year": h.get("year"),
                          "repo": h["repo"]} for i, h in enumerate(hits, 1)]}
+
+
+@app.get("/facets")
+def facets():
+    """Repositories and year range, to populate the UI filters."""
+    r = es.search(index=INDEX, body={"size": 0, "aggs": {
+        "repos": {"terms": {"field": "repo", "size": 50}},
+        "years": {"stats": {"field": "year"}}}})["aggregations"]
+    return {"repos": [{"id": b["key"], "count": b["doc_count"]} for b in r["repos"]["buckets"]],
+            "year_min": r["years"].get("min"), "year_max": r["years"].get("max")}
+
+UI_DIR = Path(__file__).resolve().parent.parent / "ui"
+
+@app.get("/", include_in_schema=False)
+def home(): return FileResponse(UI_DIR / "index.html")
+
+app.mount("/static", StaticFiles(directory=UI_DIR), name="static")
