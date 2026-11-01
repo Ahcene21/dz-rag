@@ -37,7 +37,11 @@ def harvest(repo, out_dir="data", delay=1.0):
     print(repo["id"], "harvested", n)
 
 if __name__ == "__main__":
-    for r in yaml.safe_load(open(sys.argv[1] if len(sys.argv) > 1 else "repos.yaml"))["repos"]:
+    # usage: harvest.py [repos.yaml] [repo_id ...]   (no ids = all repositories)
+    cfg = sys.argv[1] if len(sys.argv) > 1 else "repos.yaml"
+    only = set(sys.argv[2:])
+    for r in yaml.safe_load(open(cfg))["repos"]:
+        if only and r["id"] not in only: continue
         try:
             harvest(r)
         except KeyboardInterrupt:
