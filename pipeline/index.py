@@ -24,17 +24,18 @@ MAPPING = {
 }
 
 def clean(s): return re.sub(r"\s+", " ", s or "").strip()
+def L(x): return [str(i).strip() for i in (x or []) if i and str(i).strip()]  # drop None / empty entries
 
 def to_doc(r):
-    title = clean((r.get("title") or [""])[0])
-    abstract = clean(" ".join(r.get("description") or []))
+    title = clean((L(r.get("title")) or [""])[0])
+    abstract = clean(" ".join(L(r.get("description"))))
     if not title: return None
-    m = re.search(r"(19|20)\d{2}", " ".join(r.get("date") or []))
-    urls = [i for i in (r.get("identifier") or []) if i.startswith("http")]
+    m = re.search(r"(19|20)\d{2}", " ".join(L(r.get("date"))))
+    urls = [i for i in L(r.get("identifier")) if i.startswith("http")]
     return {"title": title, "abstract": abstract,
-            "creators": r.get("creator") or [], "subjects": r.get("subject") or [],
+            "creators": L(r.get("creator")), "subjects": L(r.get("subject")),
             "year": int(m.group(0)) if m else None, "repo": r["repo"],
-            "type": (r.get("type") or [None])[0], "lang": (r.get("language") or [None])[0],
+            "type": (L(r.get("type")) or [None])[0], "lang": (L(r.get("language")) or [None])[0],
             "url": urls[0] if urls else None, "_id": hashlib.sha1(r["oai_id"].encode()).hexdigest()}
 
 def main():
