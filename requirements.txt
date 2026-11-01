@@ -1,0 +1,9 @@
+# Main environment: harvest, index, API, retrieval evaluation
+sickle
+requests
+pyyaml
+opensearch-py
+sentence-transformers
+fastapi
+uvicorn
+ranx

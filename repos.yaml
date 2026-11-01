@@ -1,0 +1,6 @@
+repos:
+  - {id: cubarika, name: "Centre Universitaire de Barika", base_url: "https://dspace.cu-barika.dz"}
+  - {id: usthb,    name: "USTHB",                          base_url: "https://dspace.usthb.dz"}
+  - {id: tiaret,   name: "Université de Tiaret",            base_url: "https://dspace.univ-tiaret.dz"}
+  - {id: ensjsi,   name: "ENSJSI",                          base_url: "https://dspace.ensjsi.dz"}
+  - {id: ummto,    name: "UMMTO",                           base_url: "https://dspace.ummto.dz"}

@@ -1,0 +1,7 @@
+# Separate environment for eval/rag_eval.py (version pins matter)
+ragas==0.4.3
+langchain-openai<1
+langchain-core<1
+langchain-community==0.3.27
+sentence-transformers
+requests

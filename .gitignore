@@ -1,0 +1,6 @@
+.venv/
+.venv-ragas/
+__pycache__/
+data/
+eval/results/
+*.pyc
