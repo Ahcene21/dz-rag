@@ -42,8 +42,8 @@ def main():
     ap.add_argument("--recreate", action="store_true"); ap.add_argument("--batch", type=int, default=32)
     a = ap.parse_args()
     es = os_client()
-    if a.recreate and es.indices.exists(INDEX): es.indices.delete(INDEX)
-    if not es.indices.exists(INDEX): es.indices.create(INDEX, body=MAPPING)
+    if a.recreate and es.indices.exists(index=INDEX): es.indices.delete(index=INDEX)
+    if not es.indices.exists(index=INDEX): es.indices.create(index=INDEX, body=MAPPING)
 
     docs = []
     for f in glob.glob(f"{a.data}/*/records.jsonl"):
@@ -63,7 +63,7 @@ def main():
             actions.append({"_index": INDEX, "_id": d["_id"], "_source": src})
         helpers.bulk(es, actions)
         print(f"indexed {min(i + a.batch, len(docs))}/{len(docs)}")
-    es.indices.refresh(INDEX)
+    es.indices.refresh(index=INDEX)
 
 if __name__ == "__main__":
     main()
