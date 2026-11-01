@@ -9,7 +9,7 @@ INDEX, DIM = "dz_records", 1024
 os_client = lambda: OpenSearch(hosts=[{"host": "localhost", "port": 9200}])
 
 MAPPING = {
-  "settings": {"index": {"knn": True}},
+  "settings": {"index": {"knn": True, "number_of_replicas": 0}},
   "mappings": {"properties": {
     "title":    {"type": "text", "fields": {"ar": {"type": "text", "analyzer": "arabic"},
                  "fr": {"type": "text", "analyzer": "french"}, "en": {"type": "text", "analyzer": "english"}}},
@@ -40,7 +40,7 @@ def to_doc(r):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--data", default="data")
-    ap.add_argument("--recreate", action="store_true"); ap.add_argument("--batch", type=int, default=32)
+    ap.add_argument("--recreate", action="store_true"); ap.add_argument("--limit", type=int, default=0, help="index only the first N records (quick test)"); ap.add_argument("--batch", type=int, default=32)
     a = ap.parse_args()
     es = os_client()
     if a.recreate and es.indices.exists(index=INDEX): es.indices.delete(index=INDEX)
@@ -51,7 +51,9 @@ def main():
         for line in open(f, encoding="utf-8"):
             d = to_doc(json.loads(line))
             if d: docs.append(d)
-    print("records to index:", len(docs))
+    if a.limit: docs = docs[:a.limit]
+    print("records to index:", len(docs), flush=True)
+    print("loading BGE-M3 (first run downloads ~2 GB)...", flush=True)
 
     model = SentenceTransformer("BAAI/bge-m3")
     for i in range(0, len(docs), a.batch):
