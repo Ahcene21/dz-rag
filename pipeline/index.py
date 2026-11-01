@@ -47,10 +47,18 @@ def main():
     if not es.indices.exists(index=INDEX): es.indices.create(index=INDEX, body=MAPPING)
 
     docs = []
-    for f in glob.glob(f"{a.data}/*/records.jsonl"):
-        for line in open(f, encoding="utf-8"):
-            d = to_doc(json.loads(line))
+    bad = 0
+    for f in sorted(glob.glob(f"{a.data}/*/records.jsonl")):
+        for n, line in enumerate(open(f, encoding="utf-8"), 1):
+            if not line.strip(): continue            # blank line
+            try:
+                d = to_doc(json.loads(line))
+            except (json.JSONDecodeError, KeyError, AttributeError) as e:
+                bad += 1
+                if bad <= 10: print(f"skipping bad line {n} in {f}: {type(e).__name__}", flush=True)
+                continue
             if d: docs.append(d)
+    if bad: print(f"WARNING: skipped {bad} unreadable lines (re-harvest that repository if many)", flush=True)
     if a.limit: docs = docs[:a.limit]
     print("records to index:", len(docs), flush=True)
     print("loading BGE-M3 (first run downloads ~2 GB)...", flush=True)
