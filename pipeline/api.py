@@ -5,7 +5,7 @@ Env: OLLAMA_URL (default http://localhost:11434), LLM_MODEL (default qwen2.5:7b-
 import os, requests
 from functools import lru_cache
 from pathlib import Path
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from opensearchpy.exceptions import ConnectionError as OSConnectionError, NotFoundError
 from fastapi.staticfiles import StaticFiles
@@ -106,10 +106,17 @@ def ask(a: Ask):
     contexts = [f"{h['title']} ({h.get('year')}; {', '.join(h['creators'][:2])})\n{(h.get('abstract') or '')[:1200]}"
                 for h in hits]
     sources = "\n\n".join(f"[{i}] {c}" for i, c in enumerate(contexts, 1))
-    r = requests.post(f"{OLLAMA}/api/chat", timeout=300, json={
-        "model": LLM, "stream": False, "options": {"temperature": 0.1},
-        "messages": [{"role": "user", "content": PROMPT.format(sources=sources, question=a.question)}]})
-    r.raise_for_status()
+    try:
+        r = requests.post(f"{OLLAMA}/api/chat", timeout=300, json={
+            "model": LLM, "stream": False, "options": {"temperature": 0.1},
+            "messages": [{"role": "user", "content": PROMPT.format(sources=sources, question=a.question)}]})
+    except requests.exceptions.ConnectionError:
+        raise HTTPException(503, f"Ollama is not reachable at {OLLAMA}. Run: docker compose up -d")
+    if r.status_code == 404:
+        raise HTTPException(503, f"Model '{LLM}' not found in Ollama. Run: "
+                                 f"docker compose exec ollama ollama pull {LLM}")
+    if r.status_code >= 400:
+        raise HTTPException(502, f"Ollama error {r.status_code}: {r.text[:300]}")
     return {"answer": r.json()["message"]["content"], "contexts": contexts,
             "sources": [{"n": i, "title": h["title"], "url": h.get("url"), "year": h.get("year"),
                          "repo": h["repo"]} for i, h in enumerate(hits, 1)]}
